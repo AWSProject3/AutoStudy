@@ -1,0 +1,22 @@
+# Python cache files
+__pycache__
+
+# IDE-specific directories
+.vscode/
+.idea/
+
+# Local development files
+venv/
+.env
+
+# Testing and documentation files
+docs/
+# tests/
+# *.test.py
+*.pytest_cache
+.coverage
+
+# Miscellaneous
+*.log
+*.swp
+.DS_Store
