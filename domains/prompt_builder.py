@@ -3,7 +3,7 @@ import json
 
 from interface.impl.S3PromptTemplateFetcher import S3PromptTemplateFetcher
 
-def build_prompt(replacements):
+def build_prompt(replacements: dict) -> json:
 
     # get prompt template to S3
     prompt_template_fetcher = S3PromptTemplateFetcher(bucket_name="autostudy-prompt")
