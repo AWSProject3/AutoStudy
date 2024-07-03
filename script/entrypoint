@@ -1,0 +1,28 @@
+#!/bin/sh
+
+mysql_ready() {
+    python << END
+import sys
+import mysql.connector
+try:
+    mysql.connector.connect(
+        host="${DB_HOST}",
+        user="${MYSQL_USER}",
+        password="${MYSQL_PASSWORD}",
+        database="${MYSQL_DATABASE}",
+        port="${MYSQL_PORT}"
+    )
+except mysql.connector.Error:
+    sys.exit(-1)
+sys.exit(0)
+END
+}
+
+until mysql_ready; do
+    >&2 echo "Waiting for MySQL..."
+    sleep 1
+done
+
+>&2 echo "MySQL is available"
+
+exec "$@"
