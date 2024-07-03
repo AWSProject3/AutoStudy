@@ -11,9 +11,9 @@ class QuizService:
         self.repo = repo
 
     def create_quiz(self) -> GenerateQuizResponse:
-        constructor = QuizGenerator(self.request)
+        generator = QuizGenerator(self.request)
         
-        response = constructor.create_quiz()
+        response = generator.create_quiz()
 
         # save db
         repository = QuizRepository(session=self.repo.session)
