@@ -6,11 +6,11 @@ class GenerateQuizRequest(BaseModel):
     difficulty: str
     # category: str = None
 
-    # @field_validator("source_lang", "target_lang", "difficulty")
-    # def not_empty(cls, value):
-    #     if not value:
-    #         raise ValueError("must not be empty")
-    #     return value
-    
+class GradeQuizRequest(BaseModel):
+    source_language: str
+    target_language: str
+    difficulty: str
+    quiz: str
+    user_input_code: str
 
 
