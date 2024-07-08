@@ -1,18 +1,19 @@
-import os
-
 import boto3
 
 from interface.PromptTemplateFetcher import PromptTemplateFetcher
+from core.config import env_vars
 
+REGION = env_vars.REGION
+AWS_ACCESS_KEY=env_vars.AWS_ACCESS_KEY
+AWS_SECRET_ACCESS_KEY=env_vars.AWS_SECRET_ACCESS_KEY
 
-class S3PromptTemplateFetcher(PromptTemplateFetcher):
-    
+class S3PromptTemplateFetcher(PromptTemplateFetcher):    
     def __init__(self, bucket_name: str):
         self.s3_client = boto3.client(
             's3',
-            region_name=os.getenv("REGION"), 
-            aws_access_key_id=os.getenv("AWS_ACCESS_KEY"), 
-            aws_secret_access_key=os.getenv("AWS_SECRET_ACCESS_KEY")
+            region_name=REGION, 
+            aws_access_key_id=AWS_ACCESS_KEY, 
+            aws_secret_access_key=AWS_SECRET_ACCESS_KEY
         )
         self.bucket_name = bucket_name
 
