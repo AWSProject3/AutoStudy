@@ -1,4 +1,5 @@
 
+from domains.quiz_grader import QuizGrader
 from models.repository import QuizRepository
 from schemas.quiz.request import GenerateQuizRequest
 from domains.quiz_generator import QuizGenerator
@@ -11,8 +12,9 @@ class QuizService:
         self.repo = repo
 
     def create_quiz(self) -> GenerateQuizResponse:
+
+        # generate quiz
         generator = QuizGenerator(self.request)
-        
         response = generator.create_quiz()
 
         # save db
@@ -22,4 +24,14 @@ class QuizService:
         return response
     
     def grade_quiz(self):
-        pass
+
+        # grade quiz
+        grader = QuizGrader(self.request)
+        response = grader.grade_quiz()
+
+        # save db
+        repository = QuizRepository(session=self.repo.session)
+        repository.save_feedback(feedback_data=response)
+
+        return response
+        
