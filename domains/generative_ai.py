@@ -1,4 +1,3 @@
-import os
 import json
 
 import boto3
@@ -29,8 +28,6 @@ class GenerativeAI:
 
             # Decode the response body.
             model_response = json.loads(response["body"].read().decode('utf-8'))
-            print("!!!!!!!!!!!!!!!!!!!!!")
-            print(model_response)
             
             # Extract and print the response text.
             response_text = model_response["content"][0]["text"]

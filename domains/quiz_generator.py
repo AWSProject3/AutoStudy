@@ -1,4 +1,3 @@
-from models.repository import QuizRepository
 from schemas.quiz.request import GenerateQuizRequest
 from domains import prompt_builder
 from domains.generative_ai import GenerativeAI
@@ -12,6 +11,7 @@ class QuizGenerator:
     def create_quiz(self):
         # prompt build
         prompt = prompt_builder.build_prompt(
+            template="create_quiz.txt",
             replacements={
                 "source_language": self.source_language,
                 "target_language": self.target_language,
