@@ -1,28 +1,42 @@
-from fastapi import HTTPException
+from fastapi import HTTPException, Response
 from fastapi.responses import JSONResponse
 import botocore
 from pydantic import EmailStr
+from starlette.status import HTTP_307_TEMPORARY_REDIRECT
 
 from core.cognito import AWSCognito
-from models.user import ChangePassword, ConfirmForgotPassword, UserSignin, UserSignup, UserVerify
+from core.config import env_vars
+from models.user import UserSignin, UserVerify
+import security
+
+FRONT_URL = env_vars.FRONT_URL
 
 class AuthService:
-    def user_signup(user: UserSignup, cognito: AWSCognito):
+    async def exchange_code_for_tokens(code: str, response: Response) -> str:
         try:
-            response = cognito.user_signup(user)
-        except botocore.exceptions.ClientError as e:
-            if e.response['Error']['Code'] == 'UsernameExistsException':
-                raise HTTPException(
-                    status_code=409, detail="An account with the given email already exists")
-            else:
-                raise HTTPException(status_code=500, detail="Internal Server")
+            tokens: dict = await security.exchange_code_for_tokens(code)
+
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"An unexpected error occurred: {str(e)}")
+        
         else:
-            if response['ResponseMetadata']['HTTPStatusCode'] == 200:
-                content = {
-                    "message": "User created successfully",
-                    "sub": response["UserSub"]
-                }
-                return JSONResponse(content=content, status_code=201)
+            response = Response(status_code=HTTP_307_TEMPORARY_REDIRECT)
+            response.headers["Location"] = f"{FRONT_URL}/callback"
+            
+            response.set_cookie(key="access_token", value=tokens['access_token'], httponly=True, secure=True, samesite='lax')
+            response.set_cookie(key="refresh_token", value=tokens['refresh_token'], httponly=True, secure=True, samesite='lax')
+            response.set_cookie(key="id_token", value=tokens['id_token'], httponly=True, secure=True, samesite='lax')
+            return response
+        
+    def verify_cognito_token(access_token: str, cognito: AWSCognito):
+        try:
+            response = cognito.verify_token(access_token)
+            user_info = response["UserAttributes"]
+
+        except botocore.exceptions.ClientError as e:
+            raise HTTPException(status_code=401, detail="Invalid token")
+        else:
+            return user_info
 
     def verify_account(data: UserVerify, cognito: AWSCognito):
         try:
@@ -92,54 +106,6 @@ class AuthService:
                 "RefreshToken": response['AuthenticationResult']['RefreshToken']
             }
             return JSONResponse(content=content, status_code=200)
-        
-    def forgot_password(email: EmailStr, cognito: AWSCognito):
-        try:
-            response = cognito.forgot_password(email)
-        except botocore.exceptions.ClientError as e:
-            if e.response['Error']['Code'] == 'UserNotFoundException':
-                raise HTTPException(
-                    status_code=404, detail="User deos not exist")
-            elif e.response['Error']['Code'] == 'InvalidParameterException':
-                raise HTTPException(
-                    status_code=403, detail="Unverified account")
-            else:
-                raise HTTPException(status_code=500, detail="Internal Server")
-        else:
-            return JSONResponse(content={"message": "Password reset code sent to your email address"}, status_code=200)
-
-    def confirm_forgot_password(data: ConfirmForgotPassword, cognito: AWSCognito):
-        try:
-            response = cognito.confirm_forgot_password(data)
-        except botocore.exceptions.ClientError as e:
-            if e.response['Error']['Code'] == 'ExpiredCodeException':
-                raise HTTPException(
-                    status_code=403, detail="Code expired.")
-            elif e.response['Error']['Code'] == 'CodeMismatchException':
-                raise HTTPException(
-                    status_code=400, detail="Code does not match.")
-            else:
-                raise HTTPException(status_code=500, detail="Internal Server")
-        else:
-            return JSONResponse(content={"message": "Password reset successful"}, status_code=200)
-
-    def change_password(data: ChangePassword, cognito: AWSCognito):
-        try:
-            response = cognito.change_password(data)
-        except botocore.exceptions.ClientError as e:
-            if e.response['Error']['Code'] == 'InvalidParameterException':
-                raise HTTPException(
-                    status_code=400, detail="Access token provided has wrong format")
-            elif e.response['Error']['Code'] == 'NotAuthorizedException':
-                raise HTTPException(
-                    status_code=401, detail="Incorrect username or password")
-            elif e.response['Error']['Code'] == 'LimitExceededException':
-                raise HTTPException(
-                    status_code=429, detail="Attempt limit exceeded, please try again later")
-            else:
-                raise HTTPException(status_code=500, detail="Internal Server")
-        else:
-            return JSONResponse(content={"message": "Password changed successfully"}, status_code=200)
 
     def new_access_token(refresh_token: str, cognito: AWSCognito):
         try:
@@ -164,9 +130,9 @@ class AuthService:
             }
             return JSONResponse(content=content, status_code=200)
 
-    def logout(access_token: str, cognito: AWSCognito):
+    def logout(access_token: str, cognito: AWSCognito, response: Response):
         try:
-            response = cognito.logout(access_token)
+            cognito_response = cognito.logout(access_token)
         except botocore.exceptions.ClientError as e:
             if e.response['Error']['Code'] == 'InvalidParameterException':
                 raise HTTPException(
@@ -180,19 +146,10 @@ class AuthService:
             else:
                 raise HTTPException(status_code=500, detail="Internal Server")
         else:
-            return
+            response.delete_cookie("access_token", domain="localhost", path="/", secure=True, httponly=True, samesite='lax')
+            response.delete_cookie("refresh_token", domain="localhost", path="/", secure=True, httponly=True, samesite='lax')
+            response.delete_cookie("id_token", domain="localhost", path="/", secure=True, httponly=True, samesite='lax')
 
-    def user_details(email: EmailStr, cognito: AWSCognito):
-        try:
-            response = cognito.check_user_exists(email)
-        except botocore.exceptions.ClientError as e:
-            if e.response['Error']['Code'] == 'UserNotFoundException':
-                raise HTTPException(
-                    status_code=404, detail="User deos not exist")
-            else:
-                raise HTTPException(status_code=500, detail="Internal Server")
-        else:
-            user = {}
-            for attribute in response['UserAttributes']:
-                user[attribute['Name']] = attribute['Value']
-            return JSONResponse(content=user, status_code=200)
+            return JSONResponse(content={"message": "Logged out successfully"})
+
+

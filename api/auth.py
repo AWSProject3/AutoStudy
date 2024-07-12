@@ -1,17 +1,19 @@
-from fastapi import APIRouter, status, Depends
-from pydantic import EmailStr
+from typing import Optional
 
-from models.user import AccessToken, ChangePassword, ConfirmForgotPassword, RefreshToken, UserSignin, UserSignup, UserVerify
+from fastapi import APIRouter, Cookie, Response, status, Depends
+from fastapi import Request
+
+from models.user import RefreshToken, UserSignin, UserVerify
 from services.auth_service import AuthService
 from core.cognito import AWSCognito
 from core.dependencies import get_aws_cognito
 
+
 router = APIRouter(prefix='/api/auth')
 
-# sign up
-@router.post('/signup', status_code=status.HTTP_201_CREATED, tags=['Auth'])
-async def signup_user(user: UserSignup, cognito: AWSCognito = Depends(get_aws_cognito)):
-    return AuthService.user_signup(user, cognito)
+@router.get("/callback")
+async def callback(request: Request, response: Response):
+    return await AuthService.exchange_code_for_tokens(request.query_params.get("code"), response)
 
 # verify account
 @router.post('/verify_account', status_code=status.HTTP_200_OK, tags=["Auth"])
@@ -24,31 +26,14 @@ async def verify_account(
 
 # resend confirmation code
 @router.post('/resend_confirmation_code', status_code=status.HTTP_200_OK, tags=['Auth'])
-async def resend_confirmation_code(email: EmailStr, cognito: AWSCognito = Depends(get_aws_cognito)):
-    return AuthService.resend_confirmation_code(email, cognito)
+async def resend_confirmation_code(email_data: str, cognito: AWSCognito = Depends(get_aws_cognito)):
+    return AuthService.resend_confirmation_code(email_data.email, cognito)
 
 
 # sign in
 @router.post('/signin', status_code=status.HTTP_200_OK, tags=["Auth"])
 async def signin(data: UserSignin, cognito: AWSCognito = Depends(get_aws_cognito)):
     return AuthService.user_signin(data, cognito)
-
-# forgot password
-@router.post('/forgot_password', status_code=status.HTTP_200_OK, tags=["Auth"])
-async def forgot_password(email: EmailStr, cognito: AWSCognito = Depends(get_aws_cognito)):
-    return AuthService.forgot_password(email, cognito)
-
-
-# confirm forgot password
-@router.post('/confirm_forgot_password', status_code=status.HTTP_200_OK, tags=["Auth"])
-async def confirm_forgot_password(data: ConfirmForgotPassword, cognito: AWSCognito = Depends(get_aws_cognito)):
-    return AuthService.confirm_forgot_password(data, cognito)
-
-
-# change password
-@router.post('/change_password', status_code=status.HTTP_200_OK, tags=["Auth"])
-async def change_password(data: ChangePassword, cognito: AWSCognito = Depends(get_aws_cognito)):
-    return AuthService.change_password(data, cognito)
 
 
 # generate new token
@@ -58,12 +43,19 @@ async def new_access_token(refresh_token: RefreshToken, cognito: AWSCognito = De
 
 
 # logout
-@router.post('/logout', status_code=status.HTTP_204_NO_CONTENT, tags=["Auth"])
-async def logout(access_token: AccessToken, cognito: AWSCognito = Depends(get_aws_cognito)):
-    return AuthService.logout(access_token.access_token, cognito)
+@router.post('/logout', status_code=status.HTTP_200_OK, tags=["Auth"])
+async def logout(
+    response: Response,
+    access_token: Optional[str] = Cookie(None),
+    cognito: AWSCognito = Depends(get_aws_cognito),
+):
+    return AuthService.logout(access_token, cognito, response)
 
 
-# get user detail
-@router.get('/user_details', status_code=status.HTTP_200_OK, tags=["Auth"])
-async def user_details(email: EmailStr, cognito: AWSCognito = Depends(get_aws_cognito)):
-    return AuthService.user_details(email, cognito)
+# get user detail by access_token
+@router.get('/user_details_by_token', status_code=status.HTTP_200_OK, tags=["Auth"])
+async def user_details_by_token(
+    access_token: Optional[str] = Cookie(None),
+    cognito: AWSCognito = Depends(get_aws_cognito)
+):
+    return AuthService.verify_cognito_token(access_token, cognito)

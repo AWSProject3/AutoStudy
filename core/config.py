@@ -13,6 +13,12 @@ class Settings(BaseSettings):
     MYSQL_PASSWORD: str
     MYSQL_DATABASE: str
     MYSQL_PORT: int
+    AWS_COGNITO_USER_POOL_ID: str
+    AWS_COGNITO_APP_CLIENT_ID: str
+    OIDC_KAKAO_CLIENT_SECRET: str
+    REDIRECT_URI: str
+    TOKEN_URL: str
+    FRONT_URL: str
 
     model_config = SettingsConfigDict(env_file=".env")
 
