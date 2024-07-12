@@ -11,7 +11,7 @@ from core.dependencies import get_aws_cognito
 
 router = APIRouter(prefix='/api/auth')
 
-@router.get("/callback")
+@router.get("/callback", status_code=status.HTTP_307_TEMPORARY_REDIRECT, tags=["Auth"])
 async def callback(request: Request, response: Response):
     return await AuthService.exchange_code_for_tokens(request.query_params.get("code"), response)
 
