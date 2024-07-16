@@ -2,6 +2,14 @@ from typing import Annotated
 from annotated_types import MinLen, MaxLen
 from pydantic import BaseModel, EmailStr, Field
 
+class UserContext(BaseModel):
+    email: str
+    name: str
+
+    @classmethod
+    def from_dict(cls, user_dict: dict):
+        return cls(email=user_dict['email'], name=user_dict['name'])
+
 class UserSignup(BaseModel):
     name: str = Field(max_length=50)
     email: EmailStr

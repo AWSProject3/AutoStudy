@@ -19,8 +19,11 @@ class Settings(BaseSettings):
     REDIRECT_URI: str
     TOKEN_URL: str
     FRONT_URL: str
+    BUCKET_NAME: str
+    REDIS_HOST: str
 
-    model_config = SettingsConfigDict(env_file=".env")
+    # model_config = SettingsConfigDict(env_file=".env")
+    model_config = SettingsConfigDict(env_prefix="")
 
 settings = Settings()
 
