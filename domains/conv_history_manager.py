@@ -27,3 +27,9 @@ class ConversationHistoryManager:
     def history_exists(self, client_id: str) -> bool:
         key = self._get_key(client_id)
         return self.redis_manager.exists(key)
+    
+    def load_or_create_history(self, client_id: str) -> list:
+        key = self._get_key(client_id)
+        if self.redis_manager.exists(key):
+            return self.get_history(client_id)
+        return []

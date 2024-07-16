@@ -19,17 +19,23 @@ connection_manager = ConnectionManager()
 
 qna_service = QnAService(history_manager, ai_model, connection_manager)
 
+# @router.websocket("/ws")
+# async def websocket_endpoint(
+#     websocket: WebSocket,
+#     current_user: dict = Depends(get_current_user_ws),
+# ):  
+#     await qna_service.handle_websocket(websocket, current_user)
+
+#     try:
+#         while True:
+#             data = await websocket.receive_text()
+#             response = await qna_service.process_message(data, current_user)
+#             await qna_service.send_personal_message(response, current_user)
+#     except WebSocketDisconnect:
+#         qna_service.disconnect(current_user)
 @router.websocket("/ws")
 async def websocket_endpoint(
     websocket: WebSocket,
     current_user: dict = Depends(get_current_user_ws),
 ):  
     await qna_service.handle_websocket(websocket, current_user)
-
-    try:
-        while True:
-            data = await websocket.receive_text()
-            response = await qna_service.process_message(data, current_user)
-            await qna_service.send_personal_message(response, current_user)
-    except WebSocketDisconnect:
-        qna_service.disconnect(current_user)
