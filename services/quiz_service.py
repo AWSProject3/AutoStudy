@@ -1,5 +1,5 @@
-
 from domains.quiz_grader import QuizGrader
+from interface.impl.cached_quiz import CachedQuizRepository
 from models.repository import QuizRepository
 from schemas.quiz.request import GenerateQuizRequest
 from domains.quiz_generator import QuizGenerator
@@ -7,20 +7,16 @@ from schemas.quiz.response import CategoryDetails, GenerateQuizResponse, HintDet
 
 
 class QuizService:
-    def __init__(self, request: GenerateQuizRequest, repo: QuizRepository, user: dict):
-        self.request = request
+    def __init__(self, repo: CachedQuizRepository):
         self.repo = repo
-        self.user = user
 
-    def create_quiz(self) -> GenerateQuizResponse:
-
+    def create_quiz(self, request: GenerateQuizRequest, user: dict) -> GenerateQuizResponse:
         # generate quiz
-        generator = QuizGenerator(self.request)
+        generator = QuizGenerator(request, self.repo, user)
         response = generator.create_quiz()
 
-        # save db
-        repository = QuizRepository(session=self.repo.session)
-        repository.save_quiz(quiz_data=response, user=self.user)
+        # save db & update redis
+        self.repo.save_quiz(quiz_data=response, user=user)
 
         return response
     
@@ -36,9 +32,8 @@ class QuizService:
 
         return response
     
-    def get_quiz_history(self):
-        repository = QuizRepository(session=self.repo.session)
-        quizzes = repository.get_quiz_list(user=self.user)
+    def get_quiz_history(self, user: dict):
+        quizzes = self.repo.get_quiz_list(user=user)
 
         return [GenerateQuizResponse(
             source_language=quiz.source_language,

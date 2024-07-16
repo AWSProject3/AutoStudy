@@ -23,3 +23,13 @@ class RedisManager:
     
     def ttl(self, key: str) -> int:
         return self.redis_client.ttl(key)
+    
+    def rpush_and_trim(self, key: str, value: str, max_length: int = 7):
+        pipe = self.redis_client.pipeline()
+        pipe.rpush(key, value)
+        pipe.ltrim(key, -max_length, -1)
+        pipe.execute()
+
+    def get_list(self, key: str) -> list:
+        return self.redis_client.lrange(key, 0, -1)
+

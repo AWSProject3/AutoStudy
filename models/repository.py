@@ -10,7 +10,7 @@ class QuizRepository:
         self.session = session
 
     def get_quiz_list(self, user: dict) -> list[Quiz]:
-        return self.session.query(Quiz).filter_by(user_email=user.get("email")).all()
+        return self.session.query(Quiz).filter_by(user_email=user.get("email")).order_by(Quiz.id).all()
 
     def save_quiz(self, quiz_data: dict, user: dict) -> None:
         quiz = GenerateQuizResponse(**quiz_data)
@@ -31,7 +31,7 @@ class QuizRepository:
         self.session.commit()
         self.session.refresh(db_quiz)
 
-    def save_feedback(self, feedback_data: dict) -> None:
+    def save_feedback(self, feedback_data) -> None:
         pass
 
 class ProfileRepository:

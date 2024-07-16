@@ -1,6 +1,6 @@
 import boto3
 
-from interface.PromptTemplateFetcher import PromptTemplateFetcher
+from interface.prompt_template_fetcher import PromptTemplateFetcher
 from core.config import env_vars
 
 REGION = env_vars.REGION

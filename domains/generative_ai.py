@@ -58,7 +58,6 @@ class GenerativeAI:
             clean_text = fr"{response_text}"
             response = json.loads(clean_text)
 
-
             return response
         
         except ClientError as e:
