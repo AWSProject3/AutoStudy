@@ -2,11 +2,14 @@ import re
 import json
 
 from interface.impl.S3PromptTemplateFetcher import S3PromptTemplateFetcher
+from core.config import env_vars
+
+BUCKET_NAME = env_vars.BUCKET_NAME
 
 def build_prompt(replacements: dict, template: str) -> json:
 
     # get prompt template to S3
-    prompt_template_fetcher = S3PromptTemplateFetcher(bucket_name="autostudy-prompt")
+    prompt_template_fetcher = S3PromptTemplateFetcher(bucket_name=BUCKET_NAME)
     prompt_template = prompt_template_fetcher.get_prompt_template(template)
 
     pattern = r'\{\{(\w+)\}\}'  # {{ }} 패턴 정규 표현식
@@ -16,7 +19,7 @@ def build_prompt(replacements: dict, template: str) -> json:
         "anthropic_version": "bedrock-2023-05-31",
         "max_tokens": 1500,
         "temperature": 0.8,
-        "top_p": 0.5,
+        "top_p": 0.8,
         "top_k": 50,
         "messages": [
             {
