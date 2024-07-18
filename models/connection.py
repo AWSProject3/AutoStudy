@@ -1,3 +1,4 @@
+import logging
 import os
 
 from dotenv import load_dotenv
@@ -5,6 +6,8 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
 load_dotenv()
+
+logging.getLogger('sqlalchemy.engine').setLevel(logging.DEBUG)
 
 DATABASE_URL = os.getenv('DATABASE_URL')
 if not DATABASE_URL:

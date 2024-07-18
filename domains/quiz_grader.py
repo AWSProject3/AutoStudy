@@ -1,10 +1,11 @@
 from domains.generative_ai import GenerativeAI
+from interface.impl.cached_quiz import CachedQuizRepository
 from schemas.quiz.request import GradeQuizRequest
 from domains import prompt_builder
 
 
 class QuizGrader:
-    def __init__(self, request: GradeQuizRequest):
+    def __init__(self, request: GradeQuizRequest, cached_repo: CachedQuizRepository, user: dict) -> None:
         self.source_language = request.source_language
         self.target_language = request.target_language
         self.difficulty = request.difficulty
@@ -21,7 +22,8 @@ class QuizGrader:
                 "difficulty": self.difficulty,
                 "quiz": self.quiz,
                 "user_input_code": self.user_input_code,
-            }
+            },
+            recent_categories=None
         )
 
         #call bedrock

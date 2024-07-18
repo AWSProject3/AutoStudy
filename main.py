@@ -1,7 +1,12 @@
+import logging
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from api import quiz, auth, profile, qna
+
+logging.basicConfig(level=logging.INFO)
+logging.getLogger('sqlalchemy.engine').setLevel(logging.DEBUG)
 
 app = FastAPI()
 app.include_router(quiz.router)

@@ -7,6 +7,7 @@ class GenerateQuizRequest(BaseModel):
     # category: str = None
 
 class GradeQuizRequest(BaseModel):
+    id: int
     source_language: str
     target_language: str
     difficulty: str

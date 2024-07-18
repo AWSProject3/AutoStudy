@@ -1,4 +1,4 @@
-from typing import List, Text
+from typing import List, Optional, Text
 from pydantic import BaseModel
 
 class HintDetails(BaseModel):
@@ -10,6 +10,7 @@ class CategoryDetails(BaseModel):
     detail: str
 
 class GenerateQuizResponse(BaseModel):
+    id: int
     source_language: str
     target_language: str
     difficulty: str
@@ -19,22 +20,23 @@ class GenerateQuizResponse(BaseModel):
     answer: Text
 
 class ScoreDetails(BaseModel):
-    accuracy: int
-    efficiency: int
-    readability: int
-    pep8_compliance: int
-    modularity_reusability: int
-    exception_handling: int
+    accuracy: Optional[int] = None
+    efficiency: Optional[int] = None
+    readability: Optional[int] = None
+    pep8_compliance: Optional[int] = None
+    modularity_reusability: Optional[int] = None
+    exception_handling: Optional[int] = None
 
 class FeedbackDetails(BaseModel):
-    accuracy: str
-    efficiency: str
-    readability: str
-    pep8_compliance: str
-    modularity_reusability: str
-    exception_handling: str
+    accuracy: Optional[str] = None
+    efficiency: Optional[str] = None
+    readability: Optional[str] = None
+    pep8_compliance: Optional[str] = None
+    modularity_reusability: Optional[str] = None
+    exception_handling: Optional[str] = None
 
 class GradeQuizResponse(BaseModel):
+    id: int
     score: ScoreDetails
     total_score: int
     summary: str
@@ -43,3 +45,4 @@ class GradeQuizResponse(BaseModel):
     suggestions: List[str]
     best_practice_code: str
     best_practice_explanation: str
+    user_input_code: Optional[str] = None

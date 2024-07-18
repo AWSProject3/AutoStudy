@@ -21,11 +21,9 @@ def generate_quiz_handler(
 def grading_quiz_handler(
     request: GradeQuizRequest,
     current_user: dict = Depends(get_current_user),
-    quiz_repo: QuizRepository = Depends(),
+    quiz_service: QuizService = Depends(get_quiz_service)
 ) -> GradeQuizResponse:
-
-    response = QuizService(request, quiz_repo, current_user)
-    return response.grade_quiz()
+    return quiz_service.grade_quiz(request, current_user)
 
 @router.get("/history", status_code=status.HTTP_200_OK, tags=["Quiz"])
 def get_quiz_history(
@@ -34,6 +32,10 @@ def get_quiz_history(
 ) -> list[GenerateQuizResponse]:
     return quiz_service.get_quiz_history(current_user)
 
-
-def get_grade_result():
-    ...
+@router.get("/result/{quiz_id}", status_code=status.HTTP_200_OK, tags=["Quiz"])
+def get_grade_result_handler(
+    quiz_id: str,
+    current_user: dict = Depends(get_current_user),
+    quiz_service: QuizService = Depends(get_quiz_service)
+) -> GradeQuizResponse | None:
+    return quiz_service.get_grade_result(quiz_id, current_user)

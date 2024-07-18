@@ -1,10 +1,9 @@
 import json
 import unittest
-from unittest.mock import MagicMock, patch
-import re
+from unittest.mock import patch
 
 from domains.prompt_builder import build_prompt
-from interface.impl.S3PromptTemplateFetcher import S3PromptTemplateFetcher
+from interface.impl.s3_prompt_template_fetcher import S3PromptTemplateFetcher
 
 class TestBuildPrompt(unittest.TestCase):
 

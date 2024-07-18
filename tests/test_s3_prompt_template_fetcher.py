@@ -3,7 +3,7 @@ import os
 import unittest
 from unittest.mock import MagicMock, patch
 
-from interface.impl.S3PromptTemplateFetcher import S3PromptTemplateFetcher
+from interface.impl.s3_prompt_template_fetcher import S3PromptTemplateFetcher
 
 
 
