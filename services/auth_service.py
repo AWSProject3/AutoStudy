@@ -23,9 +23,9 @@ class AuthService:
             response = Response(status_code=HTTP_307_TEMPORARY_REDIRECT)
             response.headers["Location"] = f"{FRONT_URL}/callback"
             
-            response.set_cookie(key="access_token", value=tokens['access_token'], httponly=True, secure=True, samesite='lax')
-            response.set_cookie(key="refresh_token", value=tokens['refresh_token'], httponly=True, secure=True, samesite='lax')
-            response.set_cookie(key="id_token", value=tokens['id_token'], httponly=True, secure=True, samesite='lax')
+            response.set_cookie(key="access_token", value=tokens['access_token'], httponly=True, secure=True, samesite='None', path="/")
+            response.set_cookie(key="refresh_token", value=tokens['refresh_token'], httponly=True, secure=True, samesite='None', path="/")
+            response.set_cookie(key="id_token", value=tokens['id_token'], httponly=True, secure=True, samesite='None', path="/")
             return response
         
     def verify_cognito_token(access_token: str, cognito: AWSCognito):
